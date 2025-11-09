@@ -1,0 +1,25 @@
+version: '3'
+services:
+  comfyui:
+    image: comfyui-rocm
+    ports:
+      - "8188:8188"
+    volumes:
+      - /mnt/other/models:/app/models:Z
+      - /mnt/other/output:/app/output:Z
+      - /mnt/other/custom_nodes:/app/custom_nodes:Z
+    devices:
+      - /dev/kfd
+      - /dev/dri
+    network_mode: "host"
+    group_add:
+      - video
+      - nogroup
+    environment:
+      - COMFYUI_LISTEN=127.0.0.1
+      - HSA_OVERRIDE_GFX_VERSION=12.0.1 # Edit according to your AMD GPU
+      - PYTORCH_ROCM_ARCH=gfx1201
+      - PYTORCH_HIP_ALLOC_CONF=garbage_collection_threshold:0.6,max_split_size_mb:6144
+    security_opt:
+      - label=disable      
+    command: ["python3", "main.py", "--listen", "127.0.0.1", "--port", "8081", "--use-pytorch-cross-attention"]
