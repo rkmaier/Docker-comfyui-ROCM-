@@ -9,6 +9,7 @@ services:
       - /mnt/other/output:/app/output:Z
       - /mnt/other/custom_nodes:/app/custom_nodes:Z
       - /mnt/other/notebook:/app/notebook:Z
+      - /sys/module/amdgpu/parameters/cwsr_enable:/sys/module/amdgpu/parameters/cwsr_enable
     devices:
       - /dev/kfd
       - /dev/dri
@@ -19,9 +20,11 @@ services:
     environment:
       - COMFYUI_LISTEN=127.0.0.1
       - HSA_OVERRIDE_GFX_VERSION=12.0.1
-      - HIP_VISIBLE_DEVICES=0  
+      - HIP_VISIBLE_DEVICES=0
+      - PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512   
       - PYTORCH_ROCM_ARCH="gfx1201" # e.g., gfx1030 for RX 6800/6900
-      - PYTORCH_HIP_ALLOC_CONF=garbage_collection_threshold:0.6,max_split_size_mb:2048
+#      - PYTORCH_HIP_ALLOC_CONF=garbage_collection_threshold:0.6,max_split_size_mb:2048
     security_opt:
       - label=disable      
-    command: ["python3", "main.py", "--listen", "127.0.0.1", "--port", "8081", "--normalvram"]
+    privileged: true  # required to write /sys/module/*
+    command: ["python3", "main.py", "--listen", "127.0.0.1", "--port", "8081"]
